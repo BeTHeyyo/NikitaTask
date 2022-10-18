@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu
 import sys
 from PyQt5.QtCore import QEvent
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 
 
 class MyWindow(QMainWindow):
@@ -80,7 +80,8 @@ class MyWindow(QMainWindow):
 
 def showWindow():
     app = QApplication(sys.argv)
-    app.setStyleSheet("QMenu {"
+    app.setStyleSheet(
+    "QMenu {"
     "background: #494B4E;"
     "border: 1px solid black;"
     "border-radius: 6px;"
@@ -90,7 +91,8 @@ def showWindow():
 
     "QMenu::item{"
     "color: #DDDDDD;"
-    "padding: 5px auto 4px 15px;"
+    "padding: 5px 200px 4px 15px;"
+    "margin: 0;"
     "font-family: 'Roboto';"
     "font-style: normal;"
     "font-weight: 400;"
@@ -109,6 +111,7 @@ def showWindow():
     "width: 1px;"
     "height: 2px;"
     "margin: 5px 0 5px;"
+    "padding: 0;"
     "}"
     )
     app.setFont(QFont("Times"),"QMenu::item")

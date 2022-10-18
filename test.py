@@ -1,52 +1,106 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
-
 import sys
-from random import choice
+import qrc_resources
 
-window_titles = [
-    'My App',
-    'My App',
-    'Still My App',
-    'Still My App',
-    'What on earth',
-    'What on earth',
-    'This is surprising',
-    'This is surprising',
-    'Something went wrong'
-]
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QMenuBar, QMenu, QToolBar, QAction, QSpinBox
+from PyQt5.QtGui import QIcon
 
-
-class MainWindow(QMainWindow):
+class Window(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("Python Menus & Toolbars")
+        self.resize(400, 200)
+        self.centralWidget = QLabel("Hello, World")
+        self.centralWidget.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.setCentralWidget(self.centralWidget)
+        self._createActions()
+        self._createMenuBar()
+        self._createToolBars()
+        self._createContextMenu()
+    
+    def _createMenuBar(self):
+        menuBar = QMenuBar()
+        self.setMenuBar(menuBar)
 
-        self.n_times_clicked = 0
+        fileMenu = QMenu("&File",self)
+        menuBar.addMenu(fileMenu)
+        fileMenu.addAction(self.newAction)
+        fileMenu.addAction(self.openAction)
+        fileMenu.addAction(self.saveAction)
+        fileMenu.addSeparator()
+        fileMenu.addAction(self.exitAction)
 
-        self.setWindowTitle("My App")
+        editMenu = menuBar.addMenu("&Edit")
+        editMenu.addAction(self.copyAction)
+        editMenu.addAction(self.pasteAction)
+        editMenu.addAction(self.cutAction)
+        editMenu.addSeparator()
 
-        self.button = QPushButton("Press Me!")
-        self.button.clicked.connect(self.the_button_was_clicked)
+        findMenu = editMenu.addMenu("Find and Replace")
+        findMenu.addAction("Find...")
+        findMenu.addAction("Replace...")
 
-        self.windowTitleChanged.connect(self.the_window_title_changed)
+        helpMenu = menuBar.addMenu(QIcon(":help-content.svg"),"&Help")
+        helpMenu.addAction(self.helpContentAction)
+        helpMenu.addAction(self.aboutAction)
 
-        self.setCentralWidget(self.button)
+    def _createToolBars(self):
+        fileToolBar = self.addToolBar("File")
+        fileToolBar.addAction(self.openAction)
+        fileToolBar.addAction(self.saveAction)
+        fileToolBar.addAction(self.exitAction)
+        fileToolBar.setMovable(False)
 
-    def the_button_was_clicked(self):
-        print("Clicked.")
-        new_window_title = choice(window_titles)
-        print("Setting title:  %s" % new_window_title)
-        self.setWindowTitle(new_window_title)
+        editToolBar = QToolBar("Edit",self)
+        self.addToolBar(editToolBar)
+        editToolBar.addAction(self.copyAction)
+        editToolBar.addAction(self.pasteAction)
+        editToolBar.addAction(self.cutAction)
 
-    def the_window_title_changed(self, window_title):
-        print("Window title changed: %s" % window_title)
+        self.fontSizeSpinBox = QSpinBox()
+        self.fontSizeSpinBox.setFocusPolicy(Qt.NoFocus)
+        editToolBar.addWidget(self.fontSizeSpinBox)
 
-        if window_title == 'Someth1ing went wrong':
-            self.button.setDisabled(True)
+    def _createActions(self):
+        self.newAction = QAction(self)
+        self.newAction.setText("&New")
+        self.newAction.setIcon(QIcon(":file-new.svg"))
 
+        self.openAction = QAction(QIcon(":file-open.svg"), "&Open...", self)
+        self.saveAction = QAction(QIcon(":file-save.svg"), "&Save", self)
+        self.exitAction = QAction("&Exit", self)
 
-app = QApplication(sys.argv)
+        self.copyAction = QAction(QIcon(":edit-copy.svg"), "&Copy", self)
+        self.pasteAction = QAction(QIcon(":edit-paste.svg"), "&Paste", self)
+        self.cutAction = QAction(QIcon(":edit-cut.svg"), "C&ut", self)
 
-window = MainWindow()
-window.show()
+        self.helpContentAction = QAction("&Help Content", self)
+        self.aboutAction = QAction("&About", self)
+    
+    def _createContextMenu(self):
+        # # # Setting contextMenuPolicy
+        self.centralWidget.setContextMenuPolicy(Qt.ActionsContextMenu)
+        # # Populating the widget with actions
+        # self.centralWidget.addAction(self.newAction)
+        # self.centralWidget.addAction(self.openAction)
+        # self.centralWidget.addAction(self.saveAction)
+        # self.centralWidget.addAction(self.copyAction)
+        # self.centralWidget.addAction(self.pasteAction)
+        # self.centralWidget.addAction(self.cutAction)
+        menuBar = QMenuBar()
+        editMenu = QMenu("&Edit")
+        editMenu.addAction(self.copyAction)
+        editMenu.addAction(self.pasteAction)
+        editMenu.addAction(self.cutAction)
+        editMenu.addSeparator()
 
-app.exec()
+        findMenu = editMenu.addMenu("Find and Replace")
+        findMenu.addAction("Find...")
+        findMenu.addAction("Replace...")
+        
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    win = Window()
+    win.show()
+    sys.exit(app.exec_())

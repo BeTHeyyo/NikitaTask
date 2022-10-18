@@ -1,32 +1,40 @@
 import sys
-
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QTextEdit, QVBoxLayout, QWidget
+from PyQt5.Qt import Qt
+from PyQt5.QtWidgets import *
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.label1 = QLabel("Click in this window")
+        super(MainWindow, self).__init__()
 
-        self.setCentralWidget(self.label1)
+        # Window size
+        self.WIDTH = 300
+        self.HEIGHT = 300
+        self.resize(self.WIDTH, self.HEIGHT)
 
-    def mouseMoveEvent(self, e):
-        self.label1.setText("mouseMoveEvent")
+        # Widget
+        self.centralwidget = QWidget(self)
+        self.centralwidget.resize(self.WIDTH, self.HEIGHT)
 
-    def mousePressEvent(self, e):
-        self.label1.setText("mousePressEvent")
+        # Initial
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowOpacity(0.6)
 
-    def mouseReleaseEvent(self, e):
-        self.label1.setText("mouseReleaseEvent")
+        radius = 30
+        self.centralwidget.setStyleSheet(
+            """
+            background:rgb(255, 255, 255);
+            border-top-left-radius:{0}px;
+            border-bottom-left-radius:{0}px;
+            border-top-right-radius:{0}px;
+            border-bottom-right-radius:{0}px;
+            """.format(radius)
+        )
 
-    def mouseDoubleClickEvent(self, e):
-        self.label1.setText("mouseDoubleClickEvent")
 
-
-app = QApplication(sys.argv)
-
-window = MainWindow()
-window.show()
-
-app.exec()
+if __name__ == '__main__':
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
