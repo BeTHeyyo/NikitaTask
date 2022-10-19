@@ -16,6 +16,7 @@ class Window(QMainWindow):
         self._createRCActions()
     
     def contextMenuEvent(self, event):
+
         rqContextMenu = QMenu(self.centralWidget)
         
         presetsMenu = QMenu("HU Presets", self)
@@ -80,9 +81,6 @@ class Window(QMainWindow):
         # )
 
         rqContextMenu.exec(event.globalPos())
-        
-    def refresh(self):
-        print("refresh")
 
     def _createRCActions(self):
         self.rcMoveAction = QAction("Move",self)

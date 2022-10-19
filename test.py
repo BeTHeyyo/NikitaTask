@@ -1,106 +1,161 @@
 import sys
-import qrc_resources
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QMenuBar, QMenu, QToolBar, QAction, QSpinBox
-from PyQt5.QtGui import QIcon
+class MenuItem(QWidget):
+    """docstring for MenuItem"""
+    def __init__(self, text='test', icon=None, parent=None):
+        super(MenuItem, self).__init__(parent)
 
-class Window(QMainWindow):
+        hbox = QHBoxLayout(self)
+        # hbox.setContentsMargins(0, 0, 0, 0)
+        label = QLabel(text)
+        btn = QPushButton()
+        if icon:
+            btn.setIcon(icon)
+
+        hbox.addWidget(label)
+        hbox.addStretch()
+        hbox.addWidget(btn)
+        self.setMinimumWidth(parent.width())
+
+
+class MyMenu(QWidget):
+    """docstring for MyMenu"""
+    def __init__(self, parent=None):
+        super(MyMenu, self).__init__(parent)
+
+        self.main_width = 200
+        self.main_height = 150
+        self.close_menu = False
+
+        self.parent = parent
+        self.setGeometry(0, 0, 200, 150)
+
+        self.initUI()
+        self.setWindowFlags(Qt.Popup)
+        # self.setWindowModality(Qt.WindowModal)
+
+    def initUI(self):
+        main_frame = QWidget(self)
+        main_v_layout = QVBoxLayout(main_frame)
+        main_v_layout.setContentsMargins(0, 0, 0, 0)
+        item_1 = MenuItem('item 1', parent=self)
+        item_2 = MenuItem('item 2', parent=self)
+        item_3 = MenuItem('item 3', parent=self)
+        main_v_layout.addWidget(item_1)
+        main_v_layout.addWidget(item_2)
+        main_v_layout.addWidget(item_3)
+
+    def animationShow(self):
+        self.close_menu = False
+        self.start_close_menu = True
+        self.show()
+
+        # PyQt4.QtCore.QRect(0, 0, 400, 23)
+        rect = self.parent.rect()
+
+        # PyQt4.QtCore.QPoint(199, 11)
+        center_pos = rect.center()
+
+        # PyQt4.QtCore.QPoint(654, 465)
+        global_center_pos = self.parent.mapToGlobal(center_pos)
+
+        height = rect.height()
+
+        show_pos = QPoint(global_center_pos.x() - (self.width() / 2), global_center_pos.y() + height)
+        # print show_pos
+
+        self.move(show_pos)
+        self.inAnimation(show_pos)
+
+    def inAnimation(self, show_pos=None):
+        start_height = QSize(self.main_width, 0)
+        end_height = QSize(self.main_width, self.main_height)
+
+        size_anim = QPropertyAnimation(self, 'size')
+        size_anim.setStartValue(start_height)
+        size_anim.setEndValue(end_height)
+        size_anim.setDuration(160)
+        size_anim.setEasingCurve(QEasingCurve.OutQuad)
+
+        opacity_anim = QPropertyAnimation(self, 'windowOpacity')
+        opacity_anim.setStartValue(0.0)
+        opacity_anim.setEndValue(1.0)
+        opacity_anim.setDuration(260)
+        opacity_anim.setEasingCurve(QEasingCurve.OutQuad)
+
+        self.in_anim_group = QParallelAnimationGroup()
+        self.in_anim_group.addAnimation(size_anim)
+        self.in_anim_group.addAnimation(opacity_anim)
+        self.in_anim_group.start()
+
+    def outAnimation(self):
+        try:
+            end_size = QSize(self.size().width(), 0)
+
+            pos_anim = QPropertyAnimation(self, 'size')
+            pos_anim.setEndValue(end_size)
+            pos_anim.setDuration(200)
+            pos_anim.setEasingCurve(QEasingCurve.InQuad)
+
+            opacity_anim = QPropertyAnimation(self, 'windowOpacity')
+            opacity_anim.setStartValue(1.0)
+            opacity_anim.setEndValue(0.0)
+            opacity_anim.setDuration(200)
+            opacity_anim.setEasingCurve(QEasingCurve.InQuad)
+
+            self.out_anim_group = QParallelAnimationGroup()
+            self.out_anim_group.addAnimation(pos_anim)
+            self.out_anim_group.addAnimation(opacity_anim)
+            self.out_anim_group.finished.connect(self.closeMenu)
+            self.out_anim_group.start()
+
+        except RuntimeError as e:
+            pass
+        except Exception as e:
+            print(e)
+
+    def closeMenu(self):
+        self.close_menu = True
+        self.setVisible(False)
+
+    def closeEvent(self, event):
+        # super(MyMenu, self).closeEvent(event)
+        if self.start_close_menu:
+            self.outAnimation()
+            self.start_close_menu = False
+
+    def hideEvent(self, event):
+        # print 'hideEvent', event
+        super(MyMenu, self).hideEvent(event)
+
+    def setVisible(self, visible):
+        if self.close_menu:
+            visible = False
+
+        elif not visible:
+            visible = True
+
+        super(MyMenu, self).setVisible(visible)
+
+
+class Win(QWidget):
+    """docstring for Win"""
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Python Menus & Toolbars")
-        self.resize(400, 200)
-        self.centralWidget = QLabel("Hello, World")
-        self.centralWidget.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.setCentralWidget(self.centralWidget)
-        self._createActions()
-        self._createMenuBar()
-        self._createToolBars()
-        self._createContextMenu()
-    
-    def _createMenuBar(self):
-        menuBar = QMenuBar()
-        self.setMenuBar(menuBar)
+        super(Win, self).__init__()
 
-        fileMenu = QMenu("&File",self)
-        menuBar.addMenu(fileMenu)
-        fileMenu.addAction(self.newAction)
-        fileMenu.addAction(self.openAction)
-        fileMenu.addAction(self.saveAction)
-        fileMenu.addSeparator()
-        fileMenu.addAction(self.exitAction)
+        vbox = QVBoxLayout(self)
+        btn = QPushButton('call menu')
+        vbox.addWidget(btn)
 
-        editMenu = menuBar.addMenu("&Edit")
-        editMenu.addAction(self.copyAction)
-        editMenu.addAction(self.pasteAction)
-        editMenu.addAction(self.cutAction)
-        editMenu.addSeparator()
+        self.menu = MyMenu(btn)
+        btn.clicked.connect(self.menu.animationShow)
 
-        findMenu = editMenu.addMenu("Find and Replace")
-        findMenu.addAction("Find...")
-        findMenu.addAction("Replace...")
 
-        helpMenu = menuBar.addMenu(QIcon(":help-content.svg"),"&Help")
-        helpMenu.addAction(self.helpContentAction)
-        helpMenu.addAction(self.aboutAction)
-
-    def _createToolBars(self):
-        fileToolBar = self.addToolBar("File")
-        fileToolBar.addAction(self.openAction)
-        fileToolBar.addAction(self.saveAction)
-        fileToolBar.addAction(self.exitAction)
-        fileToolBar.setMovable(False)
-
-        editToolBar = QToolBar("Edit",self)
-        self.addToolBar(editToolBar)
-        editToolBar.addAction(self.copyAction)
-        editToolBar.addAction(self.pasteAction)
-        editToolBar.addAction(self.cutAction)
-
-        self.fontSizeSpinBox = QSpinBox()
-        self.fontSizeSpinBox.setFocusPolicy(Qt.NoFocus)
-        editToolBar.addWidget(self.fontSizeSpinBox)
-
-    def _createActions(self):
-        self.newAction = QAction(self)
-        self.newAction.setText("&New")
-        self.newAction.setIcon(QIcon(":file-new.svg"))
-
-        self.openAction = QAction(QIcon(":file-open.svg"), "&Open...", self)
-        self.saveAction = QAction(QIcon(":file-save.svg"), "&Save", self)
-        self.exitAction = QAction("&Exit", self)
-
-        self.copyAction = QAction(QIcon(":edit-copy.svg"), "&Copy", self)
-        self.pasteAction = QAction(QIcon(":edit-paste.svg"), "&Paste", self)
-        self.cutAction = QAction(QIcon(":edit-cut.svg"), "C&ut", self)
-
-        self.helpContentAction = QAction("&Help Content", self)
-        self.aboutAction = QAction("&About", self)
-    
-    def _createContextMenu(self):
-        # # # Setting contextMenuPolicy
-        self.centralWidget.setContextMenuPolicy(Qt.ActionsContextMenu)
-        # # Populating the widget with actions
-        # self.centralWidget.addAction(self.newAction)
-        # self.centralWidget.addAction(self.openAction)
-        # self.centralWidget.addAction(self.saveAction)
-        # self.centralWidget.addAction(self.copyAction)
-        # self.centralWidget.addAction(self.pasteAction)
-        # self.centralWidget.addAction(self.cutAction)
-        menuBar = QMenuBar()
-        editMenu = QMenu("&Edit")
-        editMenu.addAction(self.copyAction)
-        editMenu.addAction(self.pasteAction)
-        editMenu.addAction(self.cutAction)
-        editMenu.addSeparator()
-
-        findMenu = editMenu.addMenu("Find and Replace")
-        findMenu.addAction("Find...")
-        findMenu.addAction("Replace...")
-        
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    win = Window()
+    win = Win()
     win.show()
     sys.exit(app.exec_())
